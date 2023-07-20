@@ -117,4 +117,25 @@ print("Variance Influence Factor: ",VIF) #2.48
 #Rsquare values. Hence we will accept the model M2 as there is very little difference
 #in the Rsquare with M8 and uses just two variables.
 
+#Using the M2 model to perform validation to explore better results. 
+
+Training_mse = []
+Testing_mse = []
+
+from sklearn.model_selection import KFold
+kf = KFold(n_splits=5) #Using the K-fold for model validation
+
+for train_index,test_index in kf.split(X2):
+    X_train,X_test = X2.iloc[train_index],X2.iloc[test_index]
+    Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
+    LR.fit(X_train,Y_train)
+    Y_pred_train = LR.predict(X_train)
+    Y_pred_test = LR.predict(X_test)
+    Training_mse.append(mean_squared_error(Y_train,Y_pred_train))
+    Testing_mse.append(mean_squared_error(Y_test,Y_pred_test))
+    
+    
+print("Average Root Training Error",(np.sqrt(np.mean(Training_mse))).round(2)) #8801.95  
+print("Average Root Testing Error",(np.sqrt(np.mean(Testing_mse))).round(2)) #9725.24
+
 #==============================================================================
