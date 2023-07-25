@@ -117,25 +117,69 @@ print("Variance Influence Factor: ",VIF) #2.48
 #Rsquare values. Hence we will accept the model M2 as there is very little difference
 #in the Rsquare with M8 and uses just two variables.
 
+#Using cooks distance to identify outliers 
+import statsmodels.formula.api as smf
+model = smf.ols('Profit~RD+Marketing',data=df).fit()
+model.summary()
+
+model_influence = model.get_influence()
+(cooks,pvalue) = model_influence.cooks_distance
+
+cooks = pd.DataFrame(cooks)
+
+#Finding the influencers using stem plot 
+import matplotlib.pyplot as plt
+fig = plt.subplots(figsize=(15,5)) 
+plt.stem(np.arange(len(df)),np.round(cooks[0],3))
+plt.xlabel('Row index')
+plt.ylabel('Cooks Distance')
+plt.show() #The plot showing all values with their cooks distance
+
+cooks[0][cooks[0]>0.1] #finds the index which has cooks distance>0.1
+
+#Plotting the influence plots
+from statsmodels.graphics.regressionplots import influence_plot
+influence_plot(model)
+plt.show()
+
+k = df.shape[1]
+n = df.shape[0]
+leverage_cutoff = 3*((k + 1)/n)
+leverage_cutoff  #0.36
+
+cooks[0][cooks[0]>leverage_cutoff] #one index identified greater than the leverage cutoff
+
+df.shape
+df.drop([49],inplace=True) #Dropping the high influence values in accordance with the leverage cutoff 
+df.shape
+
 #Using the M2 model to perform validation to explore better results. 
 
 Training_mse = []
 Testing_mse = []
+Training_r2 = []
+Testing_r2 = []
+
+Y = df["Profit"]
+X = df[["RD","Marketing"]]
 
 from sklearn.model_selection import KFold
 kf = KFold(n_splits=5) #Using the K-fold for model validation
 
-for train_index,test_index in kf.split(X2):
-    X_train,X_test = X2.iloc[train_index],X2.iloc[test_index]
+for train_index,test_index in kf.split(X):
+    X_train,X_test = X.iloc[train_index],X.iloc[test_index]
     Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
     LR.fit(X_train,Y_train)
     Y_pred_train = LR.predict(X_train)
     Y_pred_test = LR.predict(X_test)
     Training_mse.append(mean_squared_error(Y_train,Y_pred_train))
     Testing_mse.append(mean_squared_error(Y_test,Y_pred_test))
+    Training_r2.append(r2_score(Y_train,Y_pred_train))
+    Testing_r2.append(r2_score(Y_test,Y_pred_test))
     
-    
-print("Average Root Training Error",(np.sqrt(np.mean(Training_mse))).round(2)) #8801.95  
-print("Average Root Testing Error",(np.sqrt(np.mean(Testing_mse))).round(2)) #9725.24
+print("Average Root Training Error",(np.sqrt(np.mean(Training_mse))).round(2)) #7385.5  
+print("Average Root Testing Error",(np.sqrt(np.mean(Testing_mse))).round(2)) #8184.34
+print("Average Training R-square",((np.mean(Training_r2))*100).round(2)) #95.35  
+print("Average Testing R-square",((np.mean(Testing_r2))*100).round(2)) #93.54  
 
 #==============================================================================
