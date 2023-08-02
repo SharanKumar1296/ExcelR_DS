@@ -42,27 +42,52 @@ X = df.iloc[:,1:11]
 Y = df["Sales"]
 
 from sklearn.tree import DecisionTreeClassifier
-DT = DecisionTreeClassifier()
-DT.fit(X,Y)
-Y_pred = DT.predict(X)
+DTG = DecisionTreeClassifier() #using gini criterion
+DTG.fit(X,Y)
+Y_pred = DTG.predict(X)
 from sklearn.metrics import accuracy_score
 print("Accuracy Score is",(accuracy_score(Y,Y_pred)*100).round(2))
-#As expected the model has been overfitted
 
-DT.tree_.max_depth #12
-DT.tree_.node_count #141
+DTG.tree_.max_depth #12
+DTG.tree_.node_count #141
 
-from sklearn.model_selection import train_test_split
-X_train,X_test,Y_train,Y_test = train_test_split(X,Y,test_size=0.25,stratify=Y,random_state=10)
+DTE = DecisionTreeClassifier(criterion="entropy") #using entropy criterion
+DTE.fit(X,Y)
+Y_pred = DTE.predict(X)
 
-DT = DecisionTreeClassifier()
-DT.fit(X_train,Y_train)
+print("Accuracy Score is",(accuracy_score(Y,Y_pred)*100).round(2))
 
-Y_train_pred = DT.predict(X_train)
-Y_test_pred = DT.predict(X_test)
+DTE.tree_.max_depth #16
+DTE.tree_.node_count #127
 
-print("Training accuracy Score ",(accuracy_score(Y_train,Y_train_pred)*100).round(2))#100
-print("Training accuracy Score ",(accuracy_score(Y_test,Y_test_pred)*100).round(2))#68
+#As expected the Decision Tree has overfitted the model 
+
+GTraining_acc = []
+GTesting_acc = []
+ETraining_acc = []
+ETesting_acc = []
+
+from sklearn.model_selection import KFold
+kf = KFold(n_splits=5) #Using the K-fold for model validation
+
+for train_index,test_index in kf.split(X):
+    X_train,X_test = X.iloc[train_index],X.iloc[test_index]
+    Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
+    DTG.fit(X_train,Y_train)
+    DTE.fit(X_train,Y_train)
+    YG_pred_train = DTG.predict(X_train)
+    YG_pred_test = DTG.predict(X_test)
+    YE_pred_train = DTE.predict(X_train)
+    YE_pred_test = DTE.predict(X_test)
+    GTraining_acc.append((accuracy_score(Y_train,YG_pred_train)*100).round(2))
+    GTesting_acc.append((accuracy_score(Y_test,YG_pred_test)*100).round(2))
+    ETraining_acc.append((accuracy_score(Y_train,YE_pred_train)*100).round(2))
+    ETesting_acc.append((accuracy_score(Y_test,YE_pred_test)*100).round(2))
+
+print("Gini Training accuracy Score ",(np.mean(GTraining_acc).round(2)))#100
+print("Gini Testing accuracy Score ",(np.mean(GTesting_acc).round(2)))#73.25
+print("Entropy Training accuracy Score ",(np.mean(ETraining_acc).round(2)))#100
+print("Entropy Testing accuracy Score ",(np.mean(ETesting_acc).round(2)))#71.5
 
 #Using BOOSTING techniques to better the model
 
