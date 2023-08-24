@@ -73,4 +73,8 @@ from sklearn.metrics import accuracy_score
 print("Training accuracy is",(accuracy_score(Y_train,Y_train_pred)*100).round(2)) #74.42
 print("Testing accuracy is",(accuracy_score(Y_test,Y_test_pred)*100).round(2)) #70.77
 
+
+#We have used different kernels and multiple parameters for those kernels and have developed
+#the best accuracy scores in accordance with the kernels.
+
 #==============================================================================
