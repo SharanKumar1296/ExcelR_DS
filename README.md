@@ -5,4 +5,4 @@ This repository was created for the submissions of my Data Science assignments o
 
 Assessed: Basic_Statistics_Level_1,Simple Linear Regression,Logistic Regression,KNN,Naive Bayes,Multi Linear Regression,PCA, Decision Trees, Random Forests,Clustering
 
-Submitted:
+Submitted:Recommendation System, Support Vector Machine 
