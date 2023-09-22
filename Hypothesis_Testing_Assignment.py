@@ -14,6 +14,8 @@ df = pd.read_csv("Cutlets.csv")
 from scipy import stats #Calculating z-val and p-val using the 2 sample Ztest 
 zcal,pval = stats.ttest_ind(df["Unit A"],df["Unit B"])
 
+print(pval) #0.472
+
 if(pval<0.05):
     print("Null Hypothesis is rejected,Alternative Hypothesis is accepted.")
 else:
@@ -53,6 +55,8 @@ import statsmodels.api as sm
 table = sm.stats.anova_lm(anova1,type=1)
 
 pv=float(table.iloc[0:1,4].values)
+
+print(pv) # ~0.0000002
 
 if(pv<0.05):
     print("Null Hypothesis is rejected,Alternative Hypothesis is accepted.")
